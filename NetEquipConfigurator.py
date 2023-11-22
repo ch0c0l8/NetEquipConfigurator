@@ -90,36 +90,50 @@ def main():
         connection_type = device_config['ConnectionType'].upper()
 
         if connection_type == 'SERIAL':
-            available_ports = list_serial_ports()
-            comport = device_config['COMPort']
-            baudrate = device_config['Baudrate']
-            data_bits = device_config['DataBits']
-            stop_bits = device_config['StopBits']
-            parity = device_config['Parity'].upper()
+            while True:  # 시리얼 포트 연결 시도 루프
+                try:
+                    available_ports = list_serial_ports()
+                    comport = device_config['COMPort']
+                    baudrate = device_config['Baudrate']
+                    data_bits = device_config['DataBits']
+                    stop_bits = device_config['StopBits']
+                    parity = device_config['Parity'].upper()
 
-            # Parity 값 처리
-            if parity == 'NONE':
-                parity = serial.PARITY_NONE
-            elif parity == 'ODD':
-                parity = serial.PARITY_ODD
-            elif parity == 'EVEN':
-                parity = serial.PARITY_EVEN
-            elif parity == 'MARK':
-                parity = serial.PARITY_MARK
-            elif parity == 'SPACE':
-                parity = serial.PARITY_SPACE
-            # 추가적인 parity 옵션 처리가 필요하면 여기에 추가
+                    # Parity 값 처리
+                    if parity == 'NONE':
+                        parity = serial.PARITY_NONE
+                    elif parity == 'ODD':
+                        parity = serial.PARITY_ODD
+                    elif parity == 'EVEN':
+                        parity = serial.PARITY_EVEN
+                    elif parity == 'MARK':
+                        parity = serial.PARITY_MARK
+                    elif parity == 'SPACE':
+                        parity = serial.PARITY_SPACE
+                    # 추가적인 parity 옵션 처리가 필요하면 여기에 추가
 
-            if comport not in available_ports:
-                print(f"포트 {comport} 사용 불가. 사용 가능한 포트를 선택하세요.")
-                comport = select_serial_port(available_ports)
+                    if comport not in available_ports:
+                        print(f"포트 {comport} 사용 불가. 사용 가능한 포트를 선택하세요.")
+                        comport = select_serial_port(available_ports)
 
-            print(f'접속 정보: {connection_type}, COMPort={comport}, Baudrate={baudrate}, DataBits={data_bits}, Parity={parity}, StopBits={stop_bits}')
+                    print(f'접속 정보: {connection_type}, COMPort={comport}, Baudrate={baudrate}, DataBits={data_bits}, Parity={parity}, StopBits={stop_bits}')
 
-            with serial.Serial(comport, baudrate, bytesize=data_bits, parity=parity, stopbits=stop_bits, timeout=3) as ser:
-                ser.write(b'\r\n')
-                time.sleep(1)
-                apply_config(ser, device_config['Config'], connection_type)
+                    with serial.Serial(comport, baudrate, bytesize=data_bits, parity=parity, stopbits=stop_bits, timeout=3) as ser:
+                        ser.write(b'\r\n')
+                        time.sleep(1)
+                        apply_config(ser, device_config['Config'], connection_type)
+                    break  # 성공적으로 연결되면 루프 탈출
+
+                except serial.SerialException as e:
+                    print(f"시리얼 포트 연결 실패: {e}")
+                    while True:
+                        retry = input("다시 시도하시겠습니까? (y/n): ").lower()
+                        if retry == 'y':
+                            break  # 다시 시도
+                        elif retry == 'n':
+                            return  # 프로그램 종료
+                        else:
+                            print("잘못된 입력입니다. 'y' 또는 'n'을 입력하세요.")
 
         elif connection_type == 'SSH':
             ip = str(device_config['IP'])
