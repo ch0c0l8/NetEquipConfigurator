@@ -80,8 +80,8 @@ def apply_config(connection, config_commands, connection_type):
 
 def main():
     print("엑셀 파일 데이터 읽어오는 중...")
-    script_dir = os.path.dirname(__file__)
-    file_path = os.path.join(script_dir, "device_configs.xlsx")
+    current_dir = os.getcwd()
+    file_path = os.path.join(current_dir, "device_configs.xlsx") 
     device_configs = read_device_configs(file_path)
     print("엑셀 파일 데이터 읽기 성공")
     input("프로그램을 시작하려면 엔터 키를 누르세요...")
