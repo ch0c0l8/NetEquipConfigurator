@@ -12,8 +12,10 @@ def list_serial_ports():
     return available_ports
 
 def select_serial_port(available_ports):
-    print("사용 가능한 시리얼 포트: ", available_ports)
     while True:
+        ports = serial.tools.list_ports.comports()
+        available_ports = [port.device for port in ports]
+        print("사용 가능한 시리얼 포트: ", available_ports)
         choice = input("연결할 시리얼 포트 번호를 입력하세요 (예: COM1 또는 1): ").upper()
         if choice.startswith("COM"):
             selected_port = choice
@@ -92,7 +94,8 @@ def main():
         if connection_type == 'SERIAL':
             while True:  # 시리얼 포트 연결 시도 루프
                 try:
-                    available_ports = list_serial_ports()
+                    ports = serial.tools.list_ports.comports()
+                    available_ports = [port.device for port in ports]
                     comport = device_config['COMPort']
                     baudrate = device_config['Baudrate']
                     data_bits = device_config['DataBits']
